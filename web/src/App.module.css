@@ -1,0 +1,48 @@
+.root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.form {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
+}
+
+.formControl {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 1rem;
+}
+
+.formInput {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.formButton {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #ccc;
+  font-weight: bold;
+}
+
+.formButtonOutline {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background-color: transparent;
+  font-weight: bold;
+}
+
+.formError {
+  color: red;
+  border: 1px solid red;
+}
