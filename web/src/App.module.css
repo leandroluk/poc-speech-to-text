@@ -4,10 +4,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 0 100px;
+  max-height: 100dvh;
 }
 
 .form {
-  width: 400px;
+  width: 100%;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -45,4 +48,10 @@
 .formError {
   color: red;
   border: 1px solid red;
+}
+
+.formSuccess {
+  border: 1px solid green;
+  max-height: 400px;
+  overflow: auto;
 }

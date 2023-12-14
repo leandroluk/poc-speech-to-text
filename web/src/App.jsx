@@ -1,43 +1,49 @@
+import axios from 'axios';
 import { useCallback, useRef, useState } from 'react';
 import styles from './App.module.css';
 
 const ERROR_FILE_IS_REQUIRED = 'File is required!'
 
+const KEY = 'app'
+
 function App() {
-  const uploadRef = useRef(null)
-  const uriRef = useRef(null)
+  const inputRef = useRef(null)
   const [error, setError] = useState(null)
-  const [useUpload, setUseUpload] = useState(true)
+  const [useUpload, setUseUpload] = useState(localStorage.getItem(KEY) === 'true')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState(null)
 
-  const onSubmitUpload = useCallback(async e => {
+  const changeUseUpload = () => setUseUpload(prev => {
+    const newValue = !prev
+    localStorage.setItem(KEY, newValue)
+    return newValue
+  })
+
+  const onSubmit = useCallback(async e => {
     try {
       setError(null)
+      setLoading(true)
       e.preventDefault()
-      if (!uploadRef.current.files?.[0]) return setError(ERROR_FILE_IS_REQUIRED)
-      const file = uploadRef.current.files?.[0]
-      const body = new FormData()
-      body.append('file', file)
-      await fetch('http://localhost:3001/upload', { method: 'POST', body })
-      setError(null)
+      let result = null
+      if (useUpload) {
+        if (!inputRef.current.files?.[0]) return setError(ERROR_FILE_IS_REQUIRED)
+        const body = new FormData()
+        body.append('file', inputRef.current.files?.[0])
+        result = await axios.post('http://localhost:3001/upload', body)
+        setError(null)
+      } else {
+        if (!inputRef.current.value) return setError(ERROR_FILE_IS_REQUIRED)
+        const body = { uri: new URL(inputRef.current.value).toString() }
+        result = await axios.post('http://localhost:3001/uri', body)
+        setError(null)
+      }
+      setResult(result.data)
     } catch (error) {
-      setError(error.message)
+      setError(error.response.data)
+    } finally {
+      setLoading(false)
     }
-  }, [uploadRef, setError])
-
-  const onSubmitUri = useCallback(async e => {
-    try {
-      setError(null)
-      e.preventDefault()
-      if (!uriRef.current.value) return setError(ERROR_FILE_IS_REQUIRED)
-      const body = { uri: new URL(uriRef.current.value).toString() }
-      await fetch('http://localhost:3001/uri', { method: 'POST', body })
-      setError(null)
-    } catch (error) {
-      setError(error.message)
-    }
-  }, [uriRef, setError])
-
-  const onSubmit = (e) => useUpload ? onSubmitUpload(e) : onSubmitUri(e)
+  }, [inputRef, useUpload, setError, setLoading, setResult])
 
   return (
     <main
@@ -52,7 +58,7 @@ function App() {
           <button
             className={styles.formButtonOutline}
             type='button'
-            onClick={() => setUseUpload(prev => !prev)}>
+            onClick={changeUseUpload}>
             use {useUpload ? 'upload' : 'uri'} method
           </button>
         </div>
@@ -60,7 +66,7 @@ function App() {
         <div className={styles.formControl}>
           <input
             className={styles.formInput}
-            ref={uploadRef}
+            ref={inputRef}
             type={useUpload ? "file" : 'url'} />
         </div>
 
@@ -69,11 +75,21 @@ function App() {
           <button
             className={styles.formButton}
             type='submit'>
-            Submit
+            {loading ? 'Loading...' : 'Submit'}
           </button>
         </div>
 
-        {error && <div className={styles.formError}>{error}</div>}
+        {error && (
+          <pre className={styles.formError}>
+            {JSON.stringify(error, null, 2)}
+          </pre>
+        )}
+
+        {result && (
+          <pre className={styles.formSuccess}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
       </form>
     </main>
   );
